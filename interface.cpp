@@ -12,3 +12,15 @@ Interface::~Interface()
 {
     delete ui;
 }
+
+void Interface::on_powerButton_clicked()
+{
+    if(powerOn == false){
+        ui->display->setText("Welcome");
+        powerOn = true;
+    }
+    else if(powerOn == true){
+        ui->display->setText("");
+        powerOn = false;
+    }
+}

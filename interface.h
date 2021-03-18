@@ -15,8 +15,12 @@ public:
     explicit Interface(QWidget *parent = nullptr);
     ~Interface();
 
+private slots:
+    void on_powerButton_clicked();
+
 private:
     Ui::Interface *ui;
+    bool powerOn = false;
 };
 
 #endif // INTERFACE_H
