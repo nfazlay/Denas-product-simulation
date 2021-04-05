@@ -25,7 +25,7 @@ signals:
     void showDisplay(QString);
 
 public slots:
-    void buttonPressed(QString&, int);
+    void buttonPressed(int);
 
 private:
     int batteryLevel;
@@ -33,6 +33,7 @@ private:
     bool select;
     int currDisplay;
     int currIndex;
+    bool skinOn;
     Therapies* selectedTherapy;
     void initFrequencies();
     void initPrograms();

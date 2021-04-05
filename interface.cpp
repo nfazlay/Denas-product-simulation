@@ -33,18 +33,26 @@ void Interface::on_powerButton_clicked()
 
 void Interface::on_selectButton_clicked()
 {
-    QString selection = ui->display->toPlainText();
-    emit set(selection, SELECT);
+    emit set(SELECT);
 }
 
 void Interface::on_upButton_clicked()
 {
-    QString selection = ui->display->toPlainText();
-    emit set(selection, UP);
+    emit set(UP);
 }
 
 void Interface::on_downButton_clicked()
 {
-    QString selection = ui->display->toPlainText();
-    emit set(selection, DOWN);
+    //QString selection = ui->display->toPlainText();
+    emit set(DOWN);
+}
+
+void Interface::on_skinOn_clicked()
+{
+    emit set(SKINON);
+}
+
+void Interface::on_skinOn_2_clicked()
+{
+    emit set(SKINOFF);
 }

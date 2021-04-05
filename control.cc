@@ -6,6 +6,7 @@ Control::Control(QObject *parent): QObject(parent)
     powerOn = false;
     currDisplay = HOME;
     currIndex = 0;
+    skinOn = false;
     menuCollection.push_front("Records");
     menuCollection.push_front("Frequencies");
     menuCollection.push_front("Programs");
@@ -24,33 +25,34 @@ void Control::start(){
             break;
         case MENU:
             emit showDisplay(menuCollection.at(currIndex));
-
             break;
         case PROG:
             Therapies* program ;
             programCollection.get(currIndex, &program);
             emit showDisplay(program->getName());
-
             break;
         case FREQ:
             Therapies* freq ;
             frequencyCollection.get(currIndex, &freq);
             emit showDisplay(freq->getName());
-
             break;
         case POWER:
             emit showDisplay("POWER: "+ QString::number(currIndex));
-
+            break;
+        case TREATMENT:
+            emit showDisplay("Treatment in porgress...");
             break;
         case RECORDS:
             emit showDisplay("RECORDS");
-
             break;
     }
 }
 
-void Control::buttonPressed(QString& selection, int button)
+void Control::buttonPressed(int button)
 {
+    if(button == SKINON) skinOn = true;
+    if(button == SKINOFF) skinOn = false;
+
     if(!powerOn) return;
 
     if(button == DOWN){
@@ -62,18 +64,21 @@ void Control::buttonPressed(QString& selection, int button)
                 currDisplay = MENU;
                 break;
             case MENU:
-                if(selection == "Records"){
-                    currDisplay = RECORDS;
-                }else if(selection == "Frequencies"){
-                    currDisplay = FREQ;
-                }else if(selection == "Programs"){
+                if(currIndex == 0){
                     currDisplay = PROG;
+                }else if(currIndex ==1){
+                    currDisplay = FREQ;
+                }else if(currIndex == 2){
+                    currDisplay = RECORDS;
                 }
                 break;
             case FREQ:
                 frequencyCollection.get(currIndex, &selectedTherapy);
                 qDebug()<<selectedTherapy->getName();
                 currDisplay = POWER;
+                break;
+            case POWER:
+                currDisplay = TREATMENT;
                 break;
         }
         currIndex =0;

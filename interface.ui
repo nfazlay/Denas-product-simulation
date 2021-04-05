@@ -175,19 +175,6 @@
       <height>80</height>
      </rect>
     </property>
-    <widget class="QRadioButton" name="skinOff">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>106</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Skin Off</string>
-     </property>
-    </widget>
     <widget class="QRadioButton" name="skinOn">
      <property name="geometry">
       <rect>
@@ -199,6 +186,25 @@
      </property>
      <property name="text">
       <string>Skin On</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="skinOn_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>106</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Skin Off</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
@@ -213,6 +219,9 @@
     </property>
     <property name="text">
      <string/>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>

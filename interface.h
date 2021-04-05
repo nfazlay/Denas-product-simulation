@@ -22,7 +22,7 @@ public:
     ~Interface();
 
 signals:
-    void set(QString&, int);
+    void set(int);
 
 private slots:
     void putDisplay(QString);
@@ -35,6 +35,10 @@ private slots:
 
     void on_downButton_clicked();
 
+
+    void on_skinOn_clicked();
+
+    void on_skinOn_2_clicked();
 
 private:
     Ui::Interface *ui;
