@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,11 +25,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        control.cc \
+        frequency.cpp \
         main.cpp \
-        interface.cpp
+        interface.cpp \
+        program.cpp \
+        therapies.cpp \
+        therapylist.cpp
 
 HEADERS += \
-        interface.h
+        constants.h \
+        control.h \
+        frequency.h \
+        interface.h \
+        program.h \
+        therapies.h \
+        therapylist.h
 
 FORMS += \
         interface.ui

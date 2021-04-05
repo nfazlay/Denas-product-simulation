@@ -166,19 +166,6 @@
      <string>Select</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton">
-    <property name="geometry">
-     <rect>
-      <x>280</x>
-      <y>330</y>
-      <width>106</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>RadioButton</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
@@ -214,6 +201,19 @@
       <string>Skin On</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QRadioButton" name="recording">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>270</y>
+      <width>16</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

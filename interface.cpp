@@ -1,11 +1,17 @@
 #include "interface.h"
 #include "ui_interface.h"
 
+
+
 Interface::Interface(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Interface)
 {
     ui->setupUi(this);
+    setWindowTitle("SIMULATION");
+
+    connect(&control, &Control::showDisplay, this, &Interface::putDisplay);
+    connect(this, &Interface::set, &control, &Control::buttonPressed);
 }
 
 Interface::~Interface()
@@ -13,14 +19,32 @@ Interface::~Interface()
     delete ui;
 }
 
+void Interface::putDisplay(QString s){
+    ui->display->setText(s);
+}
+
+
 void Interface::on_powerButton_clicked()
 {
-    if(powerOn == false){
-        ui->display->setText("Welcome");
-        powerOn = true;
-    }
-    else if(powerOn == true){
-        ui->display->setText("");
-        powerOn = false;
-    }
+
+    QFuture<void> next = QtConcurrent::run(&this->control, &Control::start);
+
+}
+
+void Interface::on_selectButton_clicked()
+{
+    QString selection = ui->display->toPlainText();
+    emit set(selection, SELECT);
+}
+
+void Interface::on_upButton_clicked()
+{
+    QString selection = ui->display->toPlainText();
+    emit set(selection, UP);
+}
+
+void Interface::on_downButton_clicked()
+{
+    QString selection = ui->display->toPlainText();
+    emit set(selection, DOWN);
 }
