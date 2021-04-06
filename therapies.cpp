@@ -12,6 +12,13 @@ using namespace std;
 
 Therapies::Therapies(){}
 
+
+Therapies::Therapies(Therapies& t){
+    name = t.getName();
+    power = t.getPower();
+    frequency = t.getFrequency();
+}
+
 Therapies::~Therapies(){}
 
 int Therapies::getPower(){

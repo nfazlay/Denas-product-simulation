@@ -25,6 +25,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        battery.cpp \
+        clock.cpp \
         control.cc \
         frequency.cpp \
         main.cpp \
@@ -34,6 +36,8 @@ SOURCES += \
         therapylist.cpp
 
 HEADERS += \
+        battery.h \
+        clock.h \
         constants.h \
         control.h \
         frequency.h \

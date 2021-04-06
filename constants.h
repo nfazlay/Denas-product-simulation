@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 enum states{
+    OFF = -1,
     HOME= 0,
     MENU= 1,
     PROG= 2,

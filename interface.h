@@ -27,6 +27,10 @@ signals:
 private slots:
     void putDisplay(QString);
 
+    void putBattery(int);
+
+    void putClock(int);
+
     void on_powerButton_clicked();
 
     void on_selectButton_clicked();
@@ -34,7 +38,6 @@ private slots:
     void on_upButton_clicked();
 
     void on_downButton_clicked();
-
 
     void on_skinOn_clicked();
 

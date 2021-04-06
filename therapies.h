@@ -9,6 +9,7 @@ using namespace std;
 class Therapies{
 public:
     Therapies();
+    Therapies(Therapies&);
     ~Therapies();
     void setPower(int);
     int getPower();

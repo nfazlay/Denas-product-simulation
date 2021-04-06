@@ -9,9 +9,12 @@ Interface::Interface(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle("SIMULATION");
+    ui->batteryLevel->setValue(100);
 
     connect(&control, &Control::showDisplay, this, &Interface::putDisplay);
     connect(this, &Interface::set, &control, &Control::buttonPressed);
+    connect(&control, &Control::updateBattery, this, &Interface::putBattery);
+    connect(&control, &Control::updateClock, this, &Interface::putClock);
 }
 
 Interface::~Interface()
@@ -23,11 +26,21 @@ void Interface::putDisplay(QString s){
     ui->display->setText(s);
 }
 
+void Interface::putBattery(int value)
+{
+    ui->batteryLevel->setValue(value);
+}
+
+void Interface::putClock(int time)
+{
+    ui->therapyTime->display(time);
+}
+
 
 void Interface::on_powerButton_clicked()
 {
 
-    QFuture<void> next = QtConcurrent::run(&this->control, &Control::start);
+    QFuture<void> next = QtConcurrent::run(&this->control, &Control::powerOn);
 
 }
 
