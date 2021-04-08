@@ -28,7 +28,7 @@ void Control::start(){
             emit showDisplay("");
             break;
         case HOME:
-            emit showDisplay("Welcome to simulator for embedded software used in microcurrent biofeedback devices\n\nClick on Select to get started\n              -------");
+            emit showDisplay("Welcome to simulator for embedded software used in microcurrent biofeedback devices\n\nClick on SELECT to get started\n              -------");
             break;
         case MENU:
             emit showDisplay(menuCollection.at(currIndex));
@@ -51,12 +51,12 @@ void Control::start(){
                 emit changePower(selectedTherapy.getPower());
                 emit clockUnpaused();
                 emit clockStart();
-                emit showDisplay("Treatment in porgress...");
+                emit showDisplay("Treatment in porgress...\n\nPress SELECT to end");
             }
             else{
                 emit changePower(-1);
                 emit clockPaused();
-                emit showDisplay("Paused");
+                emit showDisplay("Paused\n\nPress SELECT to end");
             }
             break;
         case FINISHED:
