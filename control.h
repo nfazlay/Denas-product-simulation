@@ -5,7 +5,9 @@
 #include <QDebug>
 #include <QThread>
 #include <QVector>
+#include <QtSql>
 #include <stdio.h>
+#include <QFileInfo>
 #include <QtConcurrent>
 #include "therapies.h"
 #include "constants.h"
@@ -28,18 +30,28 @@ signals:
     void showDisplay(QString);
 
     void batteryStart();
+
     void updateBattery(int);
+
     void batteryPaused();
+
     void changePower(int);
 
     void clockStart();
+
     void updateClock(int);
+
     void clockPaused();
+
     void clockReset();
+
+    void clockUnpaused();
 
 public slots:
     void start();
+
     void powerOn();
+
     void buttonPressed(int);
 
     void batteryRun(int);
@@ -47,11 +59,18 @@ public slots:
     void clockRun(int);
 
 
+
+
+
+
 private:
     bool operating;
     int currDisplay;
     int currIndex;
     bool skinOn;
+    bool recording;
+    int tempTime;
+    QString path;
     Battery *battery;
     Clock *clock;
     QThread batThread;
@@ -60,6 +79,10 @@ private:
     void init();
     void initFrequencies();
     void initPrograms();
+    void initBattery();
+    void initClock();
+    void makeRecord();
+    void addRecord(QString, int, int, int);
     QVector<QString> menuCollection;
     TherapyList frequencyCollection;
     TherapyList programCollection;

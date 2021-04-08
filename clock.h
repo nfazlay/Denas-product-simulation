@@ -20,7 +20,9 @@ signals:
 public slots:
     void run();
     void paused();
+    void unpaused();
     void reset();
+    //void sendFinal(int);
 private:
     int time;
     bool stopped;

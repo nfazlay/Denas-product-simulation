@@ -5,31 +5,21 @@ Control::Control(QObject *parent): QObject(parent)
     operating = false;
     currDisplay = OFF;
     currIndex = 0;
+    tempTime = 0;
     skinOn = false;
+    recording = false;
+    path = "database/records.sqlite";
+
     menuCollection.push_front("Records");
     menuCollection.push_front("Frequencies");
     menuCollection.push_front("Programs");
 
     initFrequencies();
     initPrograms();
+    initBattery();
+    initClock();
 
-    battery = new Battery();
-    battery->moveToThread(&batThread);
-    connect(this, SIGNAL(batteryStart()), battery, SLOT(run()));
-    connect(this, SIGNAL(batteryPaused()), battery, SLOT(paused()));
-    connect(this, SIGNAL(changePower(int)), battery, SLOT(power(int)));
-    connect(battery, SIGNAL(update(int)), this, SLOT(batteryRun(int)));
-    connect(battery, SIGNAL(batteryOut()), this, SLOT(powerOn()));
-    batThread.start();
 
-    clock = new Clock();
-    clock->moveToThread(&cloThread);
-    connect(this, SIGNAL(clockStart()), clock, SLOT(run()));
-    connect(this, SIGNAL(clockPaused()), clock, SLOT(paused()));
-    connect(this, SIGNAL(clockReset()), clock, SLOT(reset()));
-    connect(clock, SIGNAL(sendTime(int)), this, SLOT(clockRun(int)));
-
-    cloThread.start();
 }
 
 void Control::start(){
@@ -59,8 +49,8 @@ void Control::start(){
         case TREATMENT:
             if(skinOn){
                 emit changePower(selectedTherapy.getPower());
+                emit clockUnpaused();
                 emit clockStart();
-                emit clockPaused();
                 emit showDisplay("Treatment in porgress...");
             }
             else{
@@ -68,6 +58,9 @@ void Control::start(){
                 emit clockPaused();
                 emit showDisplay("Paused");
             }
+            break;
+        case FINISHED:
+            emit showDisplay("Fnished");
             break;
         case RECORDS:
             emit showDisplay("RECORDS");
@@ -88,25 +81,37 @@ void Control::powerOn()
         operating = false;
         currDisplay = OFF;
         currIndex = 0;
+        tempTime = 0;
 
         emit changePower(-1);
         emit batteryPaused();
     }
+    emit clockReset();
     start();
 
 }
 
 void Control::buttonPressed(int button)
 {
-    if(button == SKINON) skinOn = true;
-    if(button == SKINOFF) skinOn = false;
-
-    if(!operating) return;
-
-    if(button == DOWN){
-        currIndex = (currIndex == 0) ? 0 : (currIndex - 1) ;
+    if(button == SKINON) {
+        skinOn = true;
+        start();
+        return;
     }
-    else if(button == SELECT){
+    if(button == SKINOFF) {
+        skinOn = false;
+        start();
+        return;
+     }
+
+    if(button == RECORD){
+        recording = !recording;
+        return;
+    }
+
+    if(!operating || currDisplay == FINISHED) return;
+
+    if(button == SELECT){
         switch (currDisplay){
             case HOME:
                 currDisplay = MENU;
@@ -138,10 +143,27 @@ void Control::buttonPressed(int button)
                 selectedTherapy.setPower(currIndex);
                 currDisplay = TREATMENT;
                 break;
+            case TREATMENT:
+                emit changePower(-1);
+                emit clockPaused();
+                makeRecord();
+                currDisplay = FINISHED;
         }
         currIndex =0;
+        start();
+        return;
     }
-    else if(button == UP){
+    if(currDisplay == TREATMENT){
+        return;
+    }
+
+    if(button == DOWN){
+        currIndex = (currIndex == 0) ? 0 : (currIndex - 1) ;
+        start();
+        return;
+    }
+
+    if(button == UP){
         switch (currDisplay) {
             case MENU:
                 if(currIndex < menuCollection.size()-1){
@@ -164,8 +186,10 @@ void Control::buttonPressed(int button)
                 }
                 break;
         }
+        start();
+        return;
     }
-    start();
+
 }
 
 void Control::batteryRun(int batteryPer)
@@ -175,7 +199,82 @@ void Control::batteryRun(int batteryPer)
 
 void Control::clockRun(int time)
 {
+    tempTime = time;
     emit updateClock(time);
+}
+
+void Control::makeRecord()
+{
+    QSqlDatabase records;
+    records = QSqlDatabase::addDatabase("QSQLITE");
+    records.setDatabaseName("database/records.sqlite");
+    if(!records.open()){
+        qDebug()<<"Error opening database";
+    }
+    if(!(records.tables().contains(QLatin1String("recordtable")))){
+        QString query = "CREATE TABLE recordtable ("
+                        "TherapyName VARCHAR(20),"
+                        "Power integer,"
+                        "Frequency integer,"
+                        "Time integer);";
+        QSqlQuery qqry;
+
+        if(!qqry.exec(query)){
+            qDebug()<<"Error creating table";
+        }
+    }
+    QString name = selectedTherapy.getName();
+    int power = selectedTherapy.getPower();
+    int frequency = selectedTherapy.getFrequency();
+    addRecord(name, power, frequency, tempTime);
+
+    records.close();
+}
+
+void Control::addRecord(QString name, int power, int frequency, int time)
+{
+    QSqlQuery qqry;
+
+    qqry.prepare("INSERT INTO recordtable ("
+                 "TherapyName,"
+                 "Power,"
+                 "Frequency,"
+                 "Time)"
+                 "VALUES (?,?,?,?);");
+
+    qqry.addBindValue(name);
+    qqry.addBindValue(power);
+    qqry.addBindValue(frequency);
+    qqry.addBindValue(time);
+
+    if(!qqry.exec()){
+        qDebug()<<"Error adding data";
+    }
+}
+
+void Control::initBattery()
+{
+    battery = new Battery();
+    battery->moveToThread(&batThread);
+    connect(this, SIGNAL(batteryStart()), battery, SLOT(run()));
+    connect(this, SIGNAL(batteryPaused()), battery, SLOT(paused()));
+    connect(this, SIGNAL(changePower(int)), battery, SLOT(power(int)));
+    connect(battery, SIGNAL(update(int)), this, SLOT(batteryRun(int)));
+    connect(battery, SIGNAL(batteryOut()), this, SLOT(powerOn()));
+    batThread.start();
+}
+
+void Control::initClock()
+{
+    clock = new Clock();
+    clock->moveToThread(&cloThread);
+    connect(this, SIGNAL(clockStart()), clock, SLOT(run()));
+    connect(this, SIGNAL(clockPaused()), clock, SLOT(paused()));
+    connect(this, SIGNAL(clockUnpaused()), clock, SLOT(unpaused()));
+    connect(this, SIGNAL(clockReset()), clock, SLOT(reset()));
+    //connect(this, SIGNAL(sendFinal(int)), battery, SLOT(makeRecord(int)));
+    connect(clock, SIGNAL(sendTime(int)), this, SLOT(clockRun(int)));
+    cloThread.start();
 }
 
 void Control::initFrequencies(){
@@ -199,6 +298,7 @@ void Control::initPrograms(){
     therapy = new Program("Hands", 198, 15);
     programCollection.add(therapy);
 }
+
 
 
 

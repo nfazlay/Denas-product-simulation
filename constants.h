@@ -9,15 +9,17 @@ enum states{
     FREQ= 3,
     POWER= 4,
     RECORDS= 5,
-    TREATMENT = 6
+    TREATMENT = 6,
+    FINISHED = 7
 };
 
 enum buttons{
-    UP= 7,
-    DOWN = 8,
-    SELECT = 9,
-    SKINON = 10,
-    SKINOFF = 11
+    UP= 8,
+    DOWN = 9,
+    SELECT = 10,
+    SKINON = 11,
+    SKINOFF = 12,
+    RECORD = 13
 };
 
 #endif // CONSTANTS_H

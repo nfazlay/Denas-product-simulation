@@ -43,6 +43,10 @@ private slots:
 
     void on_skinOn_2_clicked();
 
+    void on_recordButton_clicked();
+
+    void on_recording_clicked();
+
 private:
     Ui::Interface *ui;
     Control control;

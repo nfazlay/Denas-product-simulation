@@ -37,6 +37,7 @@ void Battery::power(int p)
 {
     if(p == -1){
         timer = DEFTIMER;
+        qDebug()<<"Battery set to original";
         return;
     }
     unsigned long tempTimer = 0;

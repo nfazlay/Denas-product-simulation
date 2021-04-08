@@ -69,3 +69,13 @@ void Interface::on_skinOn_2_clicked()
 {
     emit set(SKINOFF);
 }
+
+void Interface::on_recordButton_clicked()
+{
+    ui->recording->click();
+}
+
+void Interface::on_recording_clicked()
+{
+    emit set(RECORD);
+}
