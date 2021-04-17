@@ -8,7 +8,7 @@ Control::Control(QObject *parent): QObject(parent)
     tempTime = 0;
     skinOn = false;
     recording = false;
-    path = "database/records.sqlite";
+    path = "./records.sqlite";
 
     menuCollection.push_front("Records");
     menuCollection.push_front("Frequencies");
@@ -61,7 +61,12 @@ void Control::start(){
             emit showDisplay("Fnished");
             break;
         case RECORDS:
-            emit showDisplay(displayWrapper(recordsCollection.at(currIndex)));
+            if(recordsCollection.isEmpty()){
+                emit showDisplay("Empty records");
+            }
+            else{
+                emit showDisplay(displayWrapper(recordsCollection.at(currIndex)));
+            }
             break;
     }
 }
