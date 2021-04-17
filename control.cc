@@ -18,8 +18,6 @@ Control::Control(QObject *parent): QObject(parent)
     initPrograms();
     initBattery();
     initClock();
-
-
 }
 
 void Control::start(){
@@ -31,17 +29,17 @@ void Control::start(){
             emit showDisplay("Welcome to simulator for embedded software used in microcurrent biofeedback devices\n\nClick on SELECT to get started\n              -------");
             break;
         case MENU:
-            emit showDisplay(menuCollection.at(currIndex));
+            emit showDisplay(displayWrapper(menuCollection.at(currIndex)));
             break;
         case PROG:
             Therapies* program ;
             programCollection.get(currIndex, &program);
-            emit showDisplay(program->getName());
+            emit showDisplay(displayWrapper(program->getName()));
             break;
         case FREQ:
             Therapies* freq ;
             frequencyCollection.get(currIndex, &freq);
-            emit showDisplay(freq->getName());
+            emit showDisplay(displayWrapper(freq->getName()));
             break;
         case POWER:
             emit showDisplay("POWER: "+ QString::number(currIndex));
@@ -63,7 +61,7 @@ void Control::start(){
             emit showDisplay("Fnished");
             break;
         case RECORDS:
-            emit showDisplay("RECORDS");
+            emit showDisplay(displayWrapper(recordsCollection.at(currIndex)));
             break;
     }
 }
@@ -86,9 +84,9 @@ void Control::powerOn()
         emit changePower(-1);
         emit batteryPaused();
     }
+    recordsCollection.clear();
     emit clockReset();
     start();
-
 }
 
 void Control::buttonPressed(int button)
@@ -122,6 +120,7 @@ void Control::buttonPressed(int button)
                 }else if(currIndex ==1){
                     currDisplay = FREQ;
                 }else if(currIndex == 2){
+                    getRecords();
                     currDisplay = RECORDS;
                 }
                 break;
@@ -185,6 +184,11 @@ void Control::buttonPressed(int button)
                     currIndex += 1;
                 }
                 break;
+            case RECORDS:
+                if(currIndex < recordsCollection.size()-1){
+                    currIndex += 1;
+                }
+                break;
         }
         start();
         return;
@@ -205,30 +209,33 @@ void Control::clockRun(int time)
 
 void Control::makeRecord()
 {
-    QSqlDatabase records;
-    records = QSqlDatabase::addDatabase("QSQLITE");
-    records.setDatabaseName("database/records.sqlite");
-    if(!records.open()){
-        qDebug()<<"Error opening database";
-    }
-    if(!(records.tables().contains(QLatin1String("recordtable")))){
-        QString query = "CREATE TABLE recordtable ("
-                        "TherapyName VARCHAR(20),"
-                        "Power integer,"
-                        "Frequency integer,"
-                        "Time integer);";
-        QSqlQuery qqry;
-
-        if(!qqry.exec(query)){
-            qDebug()<<"Error creating table";
+    if(recording){
+        QSqlDatabase records;
+        records = QSqlDatabase::addDatabase("QSQLITE");
+        records.setDatabaseName(path);
+        if(!records.open()){
+            qDebug()<<"Error opening database";
         }
-    }
-    QString name = selectedTherapy.getName();
-    int power = selectedTherapy.getPower();
-    int frequency = selectedTherapy.getFrequency();
-    addRecord(name, power, frequency, tempTime);
+        if(!(records.tables().contains(QLatin1String("recordtable")))){
+            QString query = "CREATE TABLE recordtable ("
+                            "TherapyName VARCHAR(20),"
+                            "Power integer,"
+                            "Frequency integer,"
+                            "Time integer);";
+            QSqlQuery qqry;
 
-    records.close();
+            if(!qqry.exec(query)){
+                qDebug()<<"Error creating table";
+            }
+        }
+        QString name = selectedTherapy.getName();
+        int power = selectedTherapy.getPower();
+        int frequency = selectedTherapy.getFrequency();
+        addRecord(name, power, frequency, tempTime);
+
+        records.close();
+    }
+    return;
 }
 
 void Control::addRecord(QString name, int power, int frequency, int time)
@@ -250,6 +257,62 @@ void Control::addRecord(QString name, int power, int frequency, int time)
     if(!qqry.exec()){
         qDebug()<<"Error adding data";
     }
+}
+
+void Control::getRecords()
+{
+    QSqlDatabase records;
+    records = QSqlDatabase::addDatabase("QSQLITE");
+    records.setDatabaseName(path);
+    if(!records.open()){
+        qDebug()<<"Error opening database";
+    }
+    QString data= "";
+    QSqlQuery qqry;
+    qqry.exec("SELECT * from recordtable");
+    while (qqry.next()) {
+        QString data= "";
+        QString name = qqry.value(0).toString();
+        QString power = qqry.value(1).toString();
+        QString frequency = qqry.value(2).toString();
+        QString time = qqry.value(3).toString();
+        data = "Name: " + name +" Power: "+ power + " Frequency: "+ frequency +" Time: "+ time;
+        recordsCollection.push_back(data);
+    }
+
+    records.close();
+    return;
+}
+
+QString Control::displayWrapper(QString q)
+{
+    QString display= "";
+    if(currIndex==0){
+        display = "^ \n" + q;
+        return display;
+    }
+    int end =-1;
+    switch(currDisplay){
+        case MENU:
+            end = menuCollection.size()-1;
+            break;
+        case PROG:
+            end = programCollection.getSize()-1;
+            break;
+        case FREQ:
+            end = frequencyCollection.getSize()-1;
+            break;
+        case RECORDS:
+            end = recordsCollection.size()-1;
+            break;
+    }
+    if(currIndex == end){
+        display = "\n" + q + "\n" + "v";
+        return display;
+    }
+    display = "^\n" + q + "\n" + "v";
+    return display;
+
 }
 
 void Control::initBattery()

@@ -83,7 +83,10 @@ private:
     void initClock();
     void makeRecord();
     void addRecord(QString, int, int, int);
+    void getRecords();
+    QString displayWrapper(QString);
     QVector<QString> menuCollection;
+    QVector<QString> recordsCollection;
     TherapyList frequencyCollection;
     TherapyList programCollection;
 };

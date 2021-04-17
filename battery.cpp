@@ -21,6 +21,8 @@ void Battery::run()
     }
 
     if(batteryPercentage == 0){
+        emit update(batteryPercentage);
+        stopFlag = true;
         emit batteryOut();
     }
 

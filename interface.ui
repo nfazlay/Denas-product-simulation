@@ -131,7 +131,7 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Select</string>
+     <string>SELECT</string>
     </property>
    </widget>
    <widget class="QWidget" name="widget" native="true">
