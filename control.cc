@@ -281,6 +281,8 @@ void Control::makeRecord()
     }
     if(!(records.tables().contains(QLatin1String("recordtable")))){
         QString query = "CREATE TABLE recordtable ("
+                        "TherapyDate VARCHAR(40),"
+                        "TherapyTime VARCHAR(40),"
                         "TherapyName VARCHAR(20),"
                         "Power integer,"
                         "Frequency integer,"
@@ -313,14 +315,19 @@ void Control::makeRecord()
 void Control::addRecord(QString name, int power, int frequency, int time)
 {
     QSqlQuery qqry;
+    QDateTime dt = QDateTime::currentDateTime();
 
     qqry.prepare("INSERT INTO recordtable ("
+                 "TherapyDate,"
+                 "TherapyTime,"
                  "TherapyName,"
                  "Power,"
                  "Frequency,"
                  "Time)"
-                 "VALUES (?,?,?,?);");
+                 "VALUES (?,?,?,?,?,?);");
 
+    qqry.addBindValue(dt.toString("yyyy-MM-dd"));
+    qqry.addBindValue(dt.toString("hh:ss:mm"));
     qqry.addBindValue(name);
     qqry.addBindValue(power);
     qqry.addBindValue(frequency);
@@ -349,11 +356,13 @@ void Control::getRecords()
     qqry.exec("SELECT * from recordtable");
     while (qqry.next()) {
         QString data= "";
-        QString name = qqry.value(0).toString();
-        QString power = qqry.value(1).toString();
-        QString frequency = qqry.value(2).toString();
-        QString time = qqry.value(3).toString();
-        data = "Name: " + name +" Power: "+ power + " Frequency: "+ frequency +" Time: "+ time;
+        QString date = qqry.value(0).toString();
+        QString ttime = qqry.value(1).toString();
+        QString name = qqry.value(2).toString();
+        QString power = qqry.value(3).toString();
+        QString frequency = qqry.value(4).toString();
+        QString time = qqry.value(5).toString();
+        data = "Date: " + date + " Time: " + ttime +" Name: " + name +"| Power: "+ power + "| Frequency: "+ frequency +"hz| Therapy Time: "+ time + "s";
         recordsCollection.push_back(data);
     }
 

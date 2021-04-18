@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <QFileInfo>
 #include <QtConcurrent>
+#include <QDateTime>
 #include "therapies.h"
 #include "constants.h"
 #include "frequency.h"
