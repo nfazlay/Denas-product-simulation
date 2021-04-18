@@ -1,11 +1,25 @@
 #include "battery.h"
 
+/**
+ * @brief Battery::Battery
+ * @param parent
+ * Constructor sets the battery to full,
+ * sets the flag to true and
+ * sets the timer to Default timer
+ */
 Battery::Battery(QObject *parent) : QObject(parent)
 {
     batteryPercentage = 100;
     stopFlag = true;
     timer = DEFTIMER;
 }
+
+/**
+ * @brief Battery::run
+ * The run is stated when the battery receives signal from the control
+ * It goes into a while loop and emits the updated pattery percentage to the control
+ * The while loop breaks if the stopFlag is set to true
+ */
 
 void Battery::run()
 {
@@ -20,6 +34,7 @@ void Battery::run()
         QThread::currentThread()->msleep(timer);
     }
 
+    //send the battery out signal if battery percentage is at zero
     if(batteryPercentage == 0){
         emit update(batteryPercentage);
         stopFlag = true;
@@ -28,18 +43,30 @@ void Battery::run()
 
 }
 
+/**
+ * @brief Battery::paused
+ * Gets signal to pause the battery
+ */
 void Battery::paused()
 {
-    qDebug()<<"Battery Paused";
+    qDebug()<<"Battery: "<<stopFlag;
     stopFlag = !stopFlag;
 
 }
 
+/**
+ * @brief Battery::power
+ * @param p power
+ * Changes the battery consumption according to power level after getting signal from control
+ * For power 0-10, battery is consumed 2 secnds faster
+ * For every 10 increse in power untill 50, battery is consumed .5 secs
+ * For every 10 increse the next 50, battery is consumed .25 secs faster
+ */
 void Battery::power(int p)
 {
     if(p == -1){
         timer = DEFTIMER;
-        qDebug()<<"Battery set to original";
+        qDebug()<<"Battery set to Default";
         return;
     }
     unsigned long tempTimer = 0;
@@ -55,10 +82,9 @@ void Battery::power(int p)
             tempTimer += 250;
         }
     }
-
+    qDebug()<<"Battery Consume faster";
     QMutex mutex;
     mutex.lock();
-    qDebug()<<tempTimer;
     timer = timer - tempTimer;
     mutex.unlock();
 }

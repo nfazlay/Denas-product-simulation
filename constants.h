@@ -1,6 +1,10 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+/**
+ * @brief The states enum
+ * Contains the staes of the machine
+ */
 enum states{
     OFF = -1,
     HOME= 0,
@@ -13,6 +17,10 @@ enum states{
     FINISHED = 7
 };
 
+/**
+ * @brief The buttons enum
+ * Button constants
+ */
 enum buttons{
     UP= 8,
     DOWN = 9,

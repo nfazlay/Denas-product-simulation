@@ -2,14 +2,18 @@
 #include "ui_interface.h"
 
 
-
+/**
+ * @brief Interface::Interface
+ * @param parent
+ * The contructor connects to the control thread
+ */
 Interface::Interface(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Interface)
 {
     ui->setupUi(this);
     setWindowTitle("SIMULATION");
-    ui->batteryLevel->setValue(100);
+    ui->batteryLevel->setValue(100);//the battery is set to 100%
 
     connect(&control, &Control::showDisplay, this, &Interface::putDisplay);
     connect(this, &Interface::set, &control, &Control::buttonPressed);

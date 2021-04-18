@@ -5,7 +5,10 @@
 #include <QVector>
 #include <QDebug>
 
-
+/**
+ * @brief The TherapyList class
+ * Stores a list of therapies
+ */
 class TherapyList
 {
 public:

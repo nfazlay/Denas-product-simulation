@@ -5,7 +5,12 @@
 #include <QString>
 using namespace std;
 
-
+/**
+ * @brief The Therapies class
+ * Base class for Therapy
+ * There are two types of therapies
+ * program and frequency
+ */
 class Therapies{
 public:
     Therapies();

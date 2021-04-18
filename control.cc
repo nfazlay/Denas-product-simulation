@@ -1,5 +1,11 @@
 #include "control.h"
 
+/**
+ * @brief Control::Control
+ * @param parent
+ * Control class initializes the collections,
+ * and sets variable to apporpriates
+ */
 Control::Control(QObject *parent): QObject(parent)
 {
     operating = false;
@@ -20,6 +26,20 @@ Control::Control(QObject *parent): QObject(parent)
     initClock();
 }
 
+Control::~Control()
+{
+    delete clock;
+    cloThread.exit();
+    //cloThread.wait();
+    delete battery;
+    batThread.exit();
+    //batThread.wait();
+}
+
+/**
+ * @brief Control::start
+ * Sends display message to interface according to State
+ */
 void Control::start(){
     switch (currDisplay) {
         case OFF:
@@ -61,7 +81,7 @@ void Control::start(){
             emit showDisplay("Fnished");
             break;
         case RECORDS:
-            if(recordsCollection.isEmpty()){
+            if(recordsCollection.isEmpty()){//check if any record exixts
                 emit showDisplay("Empty records");
             }
             else{
@@ -71,6 +91,13 @@ void Control::start(){
     }
 }
 
+/**
+ * @brief Control::powerOn
+ * When power button is pressed
+ * Checks if already operating
+ * The stop the simulation
+ * Otherwise start the simulation
+ */
 void Control::powerOn()
 {
     if(!operating){
@@ -93,27 +120,42 @@ void Control::powerOn()
     emit clockReset();
     start();
 }
-
+/**
+ * @brief Control::buttonPressed
+ * @param button Button pressed from Interface
+ * Gets signal from interface and performs tasks accordingly
+ * Calls the Start method to display changes
+ */
 void Control::buttonPressed(int button)
 {
+    //Sets the skin on boolean to true and sends to
+    //the interface the updated message
     if(button == SKINON) {
         skinOn = true;
         start();
         return;
     }
+    //sets the skin on boolean to false and sends to
+    //the interface he updated message
     if(button == SKINOFF) {
         skinOn = false;
         start();
         return;
      }
 
+    //Sets recording to true or false
     if(button == RECORD){
         recording = !recording;
         return;
     }
-
+    //if the display is not opearing or the Program has finished
+    //Button presses have no significance
     if(!operating || currDisplay == FINISHED) return;
 
+    //if Select button pressed
+    //Select button is used to change states
+    //Cheks which STATE currently in,
+    //Checks selection and moves to next appropriate state
     if(button == SELECT){
         switch (currDisplay){
             case HOME:
@@ -161,12 +203,14 @@ void Control::buttonPressed(int button)
         return;
     }
 
+    //If down button pressed, decrease the index by one
     if(button == DOWN){
         currIndex = (currIndex == 0) ? 0 : (currIndex - 1) ;
         start();
         return;
     }
 
+    //if up button pressed, increase the index by one by checking boundaries
     if(button == UP){
         switch (currDisplay) {
             case MENU:
@@ -201,48 +245,71 @@ void Control::buttonPressed(int button)
 
 }
 
+/**
+ * @brief Control::batteryRun
+ * @param batteryPer Battery Percentage
+ * Sends signal to interface to update battery status
+ */
 void Control::batteryRun(int batteryPer)
 {
     emit updateBattery(batteryPer);
 }
 
+/**
+ * @brief Control::clockRun
+ * @param time Time (int)
+ * Sends signal to interface to update clock
+ */
 void Control::clockRun(int time)
 {
     tempTime = time;
     emit updateClock(time);
 }
 
+/**
+ * @brief Control::makeRecord
+ * Creates a record database and calls the
+ * addRecord method to add data to database
+ */
 void Control::makeRecord()
 {
-    if(recording){
-        QSqlDatabase records;
-        records = QSqlDatabase::addDatabase("QSQLITE");
-        records.setDatabaseName(path);
-        if(!records.open()){
-            qDebug()<<"Error opening database";
-        }
-        if(!(records.tables().contains(QLatin1String("recordtable")))){
-            QString query = "CREATE TABLE recordtable ("
-                            "TherapyName VARCHAR(20),"
-                            "Power integer,"
-                            "Frequency integer,"
-                            "Time integer);";
-            QSqlQuery qqry;
+    QSqlDatabase records;
+    records = QSqlDatabase::addDatabase("QSQLITE");
+    records.setDatabaseName(path);
+    if(!records.open()){
+        qDebug()<<"Error opening database";
+    }
+    if(!(records.tables().contains(QLatin1String("recordtable")))){
+        QString query = "CREATE TABLE recordtable ("
+                        "TherapyName VARCHAR(20),"
+                        "Power integer,"
+                        "Frequency integer,"
+                        "Time integer);";
+        QSqlQuery qqry;
 
-            if(!qqry.exec(query)){
-                qDebug()<<"Error creating table";
-            }
+        if(!qqry.exec(query)){
+            qDebug()<<"Error creating table";
         }
+    }
+    if(recording){
         QString name = selectedTherapy.getName();
         int power = selectedTherapy.getPower();
         int frequency = selectedTherapy.getFrequency();
         addRecord(name, power, frequency, tempTime);
-
-        records.close();
     }
+
+    records.close();
     return;
 }
 
+/**
+ * @brief Control::addRecord
+ * @param name Name
+ * @param power Power
+ * @param frequency Frequency
+ * @param time Time
+ * Adds a record the database
+ */
 void Control::addRecord(QString name, int power, int frequency, int time)
 {
     QSqlQuery qqry;
@@ -264,6 +331,11 @@ void Control::addRecord(QString name, int power, int frequency, int time)
     }
 }
 
+
+/**
+ * @brief Control::getRecords
+ * Gets records from the database and adds to records collection
+ */
 void Control::getRecords()
 {
     QSqlDatabase records;
@@ -289,6 +361,14 @@ void Control::getRecords()
     return;
 }
 
+/**
+ * @brief Control::displayWrapper
+ * @param q QString containing string to wrap
+ * @return QString wrapped accoridng the State
+ * The displayWrapper wraps a string with up and down arrows
+ * acoridng to the State and loaction in collection
+ * The arrows signify if the user can move up or down
+ */
 QString Control::displayWrapper(QString q)
 {
     QString display= "";
@@ -320,6 +400,10 @@ QString Control::displayWrapper(QString q)
 
 }
 
+/**
+ * @brief Control::initBattery
+ * Initializes the battery thread by connecting the slots and signals
+ */
 void Control::initBattery()
 {
     battery = new Battery();
@@ -329,9 +413,14 @@ void Control::initBattery()
     connect(this, SIGNAL(changePower(int)), battery, SLOT(power(int)));
     connect(battery, SIGNAL(update(int)), this, SLOT(batteryRun(int)));
     connect(battery, SIGNAL(batteryOut()), this, SLOT(powerOn()));
+    connect(&batThread, &QThread::finished, battery, &QObject::deleteLater);
     batThread.start();
 }
 
+/**
+ * @brief Control::initClock
+ * Initializes the clock stread by connecting the slots and signals
+ */
 void Control::initClock()
 {
     clock = new Clock();
@@ -340,11 +429,15 @@ void Control::initClock()
     connect(this, SIGNAL(clockPaused()), clock, SLOT(paused()));
     connect(this, SIGNAL(clockUnpaused()), clock, SLOT(unpaused()));
     connect(this, SIGNAL(clockReset()), clock, SLOT(reset()));
-    //connect(this, SIGNAL(sendFinal(int)), battery, SLOT(makeRecord(int)));
     connect(clock, SIGNAL(sendTime(int)), this, SLOT(clockRun(int)));
+    connect(&cloThread, &QThread::finished, clock, &QObject::deleteLater);
     cloThread.start();
 }
 
+/**
+ * @brief Control::initFrequencies
+ * Initializes the frequencies
+ */
 void Control::initFrequencies(){
     Therapies* therapy = new Frequency("144hz", 144, 0);
     frequencyCollection.add(therapy);
@@ -356,6 +449,10 @@ void Control::initFrequencies(){
     frequencyCollection.add(therapy);
 }
 
+/**
+ * @brief Control::initPrograms
+ * Initializes the porgrams
+ */
 void Control::initPrograms(){
     Therapies* therapy = new Program("Neck", 144, 45);
     programCollection.add(therapy);
